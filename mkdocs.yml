@@ -1,0 +1,147 @@
+site_name: Projetos Machine Learning
+site_author: Alexandre Martinelli, André Henrique Pacheco, Hugo Coscelli Ferraz, Julia Akemi Mullis, Theo Camuri Gaspar.
+site_url: https://akemi-m.github.io/projetos-machine-learning
+repo_url: https://github.com/akemi-m/projetos-machine-learning
+repo_name: github/projetos-machine-learning
+
+theme:
+  name: material
+  palette:
+    # primary: grey
+    # Light mode
+    - scheme: default
+      primary: green
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      primary: green
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: green
+      scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to system preference
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.tooltips
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.top
+    - navigation.path
+    - navigation.tracking
+    - navigation.expand
+  icon:
+    # logo: assets/images/devops
+    admonition:
+      note: fontawesome/solid/note-sticky
+      abstract: fontawesome/solid/book
+      info: fontawesome/solid/circle-info
+      tip: fontawesome/solid/bullhorn
+      success: fontawesome/solid/check
+      question: fontawesome/solid/circle-question
+      warning: fontawesome/solid/triangle-exclamation
+      failure: fontawesome/solid/bomb
+      danger: fontawesome/solid/skull
+      bug: fontawesome/solid/robot
+      example: fontawesome/solid/flask
+      quote: fontawesome/solid/quote-left
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - markdown_grid_tables
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      url_download: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: python
+          class: python
+          validator: !!python/name:markdown_exec.validator
+          format: !!python/name:markdown_exec.formatter
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - footnotes
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.blocks.caption
+  - tables
+
+plugins:
+  - glightbox
+  - git-revision-date-localized:
+      enable_creation_date: true
+  - git-authors
+  - git-committers:
+      repository: hsandmann/hsandmann.github.com
+      branch: main
+  - search
+  - badges
+  - minify:
+      minify_html: true
+  - markdown-exec
+  - render_swagger:
+      allow_arbitrary_locations: true
+  - termynal:
+      prompt_literal_start:
+        - "$"
+        - ">"
+
+  # mkdocs-jupyter
+  - mkdocs-jupyter:
+      execute: false
+      allow_errors: false
+
+extra_javascript:
+  - https://unpkg.com/mathjax/es5/tex-mml-chtml.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://fastly.jsdelivr.net/npm/jquery/dist/jquery.min.js
+  - https://fastly.jsdelivr.net/npm/echarts/dist/echarts.min.js
+
+  # Para a implementação do mkdocs-jupyter
+  - javascripts/mathjax.js
+
+nav:
+  - Home: index.md
+  - Projetos:
+      - Projeto I: ./projeto-1/main.md
+  - Jupyter Notebooks:
+      - Projeto I: ./projeto-1/projeto-1.ipynb
