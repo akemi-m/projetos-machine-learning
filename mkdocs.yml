@@ -142,6 +142,4 @@ extra_javascript:
 nav:
   - Home: index.md
   - Projetos:
-      - Projeto I: ./projeto-1/main.md
-  - Jupyter Notebooks:
       - Projeto I: ./projeto-1/projeto-1.ipynb
