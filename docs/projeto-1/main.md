@@ -116,3 +116,19 @@ O conjunto de dados foi dividido em 70% para treino e 30% para validação, gara
     ```python
     --8<-- "docs/projeto-1/knn.py"
     ```
+
+### K-Means
+
+=== "Result"
+
+    ```python exec="1" html="1"
+    --8<-- "docs/projeto-1/kmeans.py"
+    ```
+=== "Prep Code"
+
+    ```python
+    --8<-- "docs/projeto-1/kmeans.py"
+    ```
+
+
+
