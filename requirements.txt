@@ -14,7 +14,6 @@ matplotlib
 numpy
 pandas
 yfinance
-tabulate
 scikit-learn
+tabulate
 seaborn
-mkdocs-jupyter
