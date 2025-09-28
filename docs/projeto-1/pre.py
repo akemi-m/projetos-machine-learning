@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-df = pd.read_csv('https://raw.githubusercontent.com/akemi-m/projetos-machine-learning/refs/heads/main/docs/projeto-1/covid_data.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/akemi-m/projetos-machine-learning/refs/heads/main/docs/projeto-1/covid_data.csv', low_memory=True)
 
 d = df.copy()
 
@@ -28,13 +28,15 @@ fill_values = {
     'ICU': d['ICU'].mode()[0]
 }
 
-d.fillna(fill_values, inplace=True)
+df.fillna(fill_values, inplace=True)
 
-d['DIED_FLAG'] = (d['DATE_DIED'] != '9999-99-99').astype(int)
-d['AGE'] = d['AGE'].fillna(d['AGE'].median())
+df['DIED_FLAG'] = (df['DATE_DIED'] != '9999-99-99').astype(int)
+df['AGE'] = df['AGE'].fillna(df['AGE'].median())
 
-age_min = d['AGE'].min()
-age_max = d['AGE'].max()
-d['AGE'] = (d['AGE'] - age_min) / (age_max - age_min)
+# df.dropna()
 
-print(d.to_markdown(index=False))
+age_min = df['AGE'].min()
+age_max = df['AGE'].max()
+df['AGE'] = (df['AGE'] - age_min) / (age_max - age_min)
+
+print(df.sample(n=10).to_markdown(index=False))

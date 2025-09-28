@@ -1,3 +1,15 @@
+<style>
+    table {
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+    text-align: center;
+    }
+    table td, table th {
+    padding: 8px 12px;
+    }
+</style>
+
 Este Projeto I tem como objetivo explorar diferentes técnicas de aprendizado supervisionado e não supervisionado, aplicadas a um conjunto de dados real.
 
 Serão utilizados algoritmos como:
@@ -60,7 +72,7 @@ Por fim, aplicamos a normalização Min–Max à coluna `AGE` para colocá-la na
 
 === "Result"
 
-    ```python exec="on" html="0"
+    ```python exec="1" html="0"
     --8<-- "docs/projeto-1/pre.py"
     ```
 === "Prep Code"
@@ -79,13 +91,28 @@ O conjunto de dados foi dividido em 70% para treino e 30% para validação, gara
 
 ## Treinamento dos modelos
 
+### Árvore de Decisão
+
 === "Result"
 
-    ```python exec="on" html="0"
+    ```python exec="1" html="1"
     --8<-- "docs/projeto-1/arvore.py"
     ```
 === "Prep Code"
 
     ```python
     --8<-- "docs/projeto-1/arvore.py"
+    ```
+
+### KNN
+
+=== "Result"
+
+    ```python exec="1" html="1"
+    --8<-- "docs/projeto-1/knn.py"
+    ```
+=== "Prep Code"
+
+    ```python
+    --8<-- "docs/projeto-1/knn.py"
     ```

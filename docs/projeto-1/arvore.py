@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 
-df = pd.read_csv('https://raw.githubusercontent.com/akemi-m/projetos-machine-learning/refs/heads/main/docs/projeto-1/covid_data.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/akemi-m/projetos-machine-learning/refs/heads/main/docs/projeto-1/covid_data.csv', low_memory=True)
 
 d = df.copy()
 
@@ -42,8 +42,6 @@ d['AGE'] = d['AGE'].fillna(d['AGE'].median())
 age_min = d['AGE'].min()
 age_max = d['AGE'].max()
 d['AGE'] = (d['AGE'] - age_min) / (age_max - age_min)
-
-print(d.to_markdown(index=False))
 
 plt.figure(figsize=(12, 10))
 
@@ -96,15 +94,7 @@ print(report_df.to_html(classes="table table-bordered table-striped", border=0))
 print("<h3>Matriz de Confusão:</h3>")
 print(cm_df.to_html(classes="table table-bordered table-striped", border=0))
 
-# Optional: Print feature importances
-feature_importance = pd.DataFrame({
-    'Feature': x.columns,
-    'Importance': classifier.feature_importances_
-})
-print("<br>Feature Importances:")
-print(feature_importance.sort_values(by='Importance', ascending=False).to_html())
-
-tree.plot_tree(classifier)
+tree.plot_tree(classifier, max_depth=3, fontsize=15)
 
 # Para imprimir na página HTML
 buffer = StringIO()
