@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
 import pandas as pd
-from io import StringIO
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA 
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # ---- Configuração
 SAMPLE_SIZE = 20000  # número máximo de linhas para análise/plot
@@ -36,7 +36,7 @@ for col in ['MEDICAL_UNIT', 'PATIENT_TYPE']:
 # Variável alvo
 d['TARGET'] = (d['CLASIFFICATION_FINAL'] >= 4).astype(int)
 
-# Variáveis binárias já como int
+# Variáveis binárias como int
 bin_cols = ['DATE_DIED','INTUBED','PNEUMONIA','PREGNANT','DIABETES','COPD','ASTHMA',
             'INMSUPR','HIPERTENSION','OTHER_DISEASE','CARDIOVASCULAR','OBESITY',
             'RENAL_CHRONIC','TOBACCO','ICU']
@@ -46,13 +46,13 @@ for col in bin_cols:
 
 d['DIED_FLAG'] = (d['DATE_DIED'] != '9999-99-99').astype(int)
 
-# Features e Target
+# Features
 num_features = ['AGE']
 cat_features = ['USMER','SEX','PATIENT_TYPE','MEDICAL_UNIT','DIED_FLAG']
 X = d[num_features + cat_features + bin_cols]
 y = d['TARGET']
 
-# ---- Amostragem para acelerar
+# ---- Amostragem
 if len(X) > SAMPLE_SIZE:
     X_sample = X.sample(SAMPLE_SIZE, random_state=42)
     y_sample = y.loc[X_sample.index]
@@ -60,56 +60,50 @@ else:
     X_sample = X
     y_sample = y
 
-# Pré-processamento
+# Split treino/teste
+X_train, X_test, y_train, y_test = train_test_split(
+    X_sample, y_sample, test_size=0.3, random_state=42, stratify=y_sample
+)
+
+# Preprocessamento comum
 preprocessor = ColumnTransformer([
     ('num', StandardScaler(), num_features),
     ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), cat_features)
 ])
 
-# Pipeline com KMeans
-pipeline = Pipeline([
-    ('preprocessor', preprocessor),
-    ('classifier', KMeans(n_clusters=2, init='k-means++', max_iter=100, random_state=42))
-])
+# ---- Modelos
+models = {
+    "KNN": Pipeline([('preprocessor', preprocessor),
+                     ('classifier', KNeighborsClassifier(n_neighbors=3, n_jobs=-1))]),
+    
+    "Árvore de Decisão": Pipeline([('preprocessor', preprocessor),
+                                   ('classifier', DecisionTreeClassifier(random_state=42))]),
+    
+    "KMeans": Pipeline([('preprocessor', preprocessor),
+                        ('classifier', KMeans(n_clusters=2, random_state=42, n_init=10))])
+}
 
-# Ajustar pipeline na amostra
-pipeline.fit(X_sample)
+# ---- Resultados
+results = []
 
-# Predição para a amostra
-y_pred_sample = pipeline.predict(X_sample)
+for name, model in models.items():
+    if name == "KMeans":
+        model.fit(X_sample)  # não supervisionado
+        y_pred = model.predict(X_sample)
+        y_true = y_sample
+    else:
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        y_true = y_test
 
+    acc = accuracy_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred, zero_division=0)
+    rec = recall_score(y_true, y_pred, zero_division=0)
+    f1 = f1_score(y_true, y_pred, zero_division=0)
 
-print("Accuracy:", accuracy_score(y_sample, y_pred_sample))
-print("<h3>Relatório de Classificação:</h3>")
-report_df = pd.DataFrame(classification_report(y_sample, y_pred_sample, output_dict=True)).transpose()
-print(report_df.to_html(classes="table table-bordered table-striped", border=0))
+    results.append({"Modelo": name, "Acurácia": acc, "Precisão": prec,
+                    "Recall": rec, "F1-score": f1})
 
-# ---- Matriz de confusão
-print("<h3> Matriz de Confusão:</h3>")
-cm = confusion_matrix(y_sample, y_pred_sample)
-cm_df = pd.DataFrame(cm, index=['0', '1'], columns=['0', '1'])
-print(cm_df.to_html(classes="table table-bordered table-striped", border=0))
-
-# ---- PCA para visualização
-X_sample_transformed = pipeline.named_steps['preprocessor'].transform(X_sample)
-pca = PCA(n_components=2)
-X_sample_pca = pca.fit_transform(X_sample_transformed)
-
-# Centróides no espaço PCA
-kmeans_step = pipeline.named_steps['classifier']
-centroids = kmeans_step.cluster_centers_
-centroids_pca = pca.transform(centroids)
-
-# Plot rápido
-plt.figure(figsize=(10, 8))
-plt.scatter(X_sample_pca[:, 0], X_sample_pca[:, 1], c=y_pred_sample, cmap='viridis', s=8)
-plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], 
-           c='red', marker='*', s=200, label='Centroids')
-plt.title('K-Means Clustering (PCA 2D) - Amostragem')
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
-
-# Para imprimir na página HTML
-buffer = StringIO()
-plt.savefig(buffer, format="svg")
-print(buffer.getvalue())
+# ---- Tabela comparativa
+results_df = pd.DataFrame(results)
+print(results_df.to_html(classes="table table-bordered table-striped", border=0))

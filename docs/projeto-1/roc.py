@@ -1,12 +1,13 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 from io import StringIO
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA 
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import roc_curve, auc
 
 # ---- Configuração
 SAMPLE_SIZE = 20000  # número máximo de linhas para análise/plot
@@ -46,7 +47,7 @@ for col in bin_cols:
 
 d['DIED_FLAG'] = (d['DATE_DIED'] != '9999-99-99').astype(int)
 
-# Features e Target
+# Features
 num_features = ['AGE']
 cat_features = ['USMER','SEX','PATIENT_TYPE','MEDICAL_UNIT','DIED_FLAG']
 X = d[num_features + cat_features + bin_cols]
@@ -60,54 +61,48 @@ else:
     X_sample = X
     y_sample = y
 
-# Pré-processamento
+# Split treino/teste
+X_train, X_test, y_train, y_test = train_test_split(
+    X_sample, y_sample, test_size=0.3, random_state=42, stratify=y_sample
+)
+
+# ---- Modelo KNN (com pipeline de preprocessamento)
 preprocessor = ColumnTransformer([
     ('num', StandardScaler(), num_features),
     ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), cat_features)
 ])
 
-# Pipeline com KMeans
-pipeline = Pipeline([
+knn_pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('classifier', KMeans(n_clusters=2, init='k-means++', max_iter=100, random_state=42))
+    ('classifier', KNeighborsClassifier(n_neighbors=3, n_jobs=-1))
 ])
 
-# Ajustar pipeline na amostra
-pipeline.fit(X_sample)
+knn_pipeline.fit(X_train, y_train)
+y_proba_knn = knn_pipeline.predict_proba(X_test)[:, 1]
 
-# Predição para a amostra
-y_pred_sample = pipeline.predict(X_sample)
+# ---- Modelo Árvore de Decisão
+tree_clf = DecisionTreeClassifier(random_state=42)
+tree_clf.fit(X_train, y_train)
+y_proba_tree = tree_clf.predict_proba(X_test)[:, 1]
 
+# ---- Curvas ROC
+fpr_knn, tpr_knn, _ = roc_curve(y_test, y_proba_knn)
+roc_auc_knn = auc(fpr_knn, tpr_knn)
 
-print("Accuracy:", accuracy_score(y_sample, y_pred_sample))
-print("<h3>Relatório de Classificação:</h3>")
-report_df = pd.DataFrame(classification_report(y_sample, y_pred_sample, output_dict=True)).transpose()
-print(report_df.to_html(classes="table table-bordered table-striped", border=0))
+fpr_tree, tpr_tree, _ = roc_curve(y_test, y_proba_tree)
+roc_auc_tree = auc(fpr_tree, tpr_tree)
 
-# ---- Matriz de confusão
-print("<h3> Matriz de Confusão:</h3>")
-cm = confusion_matrix(y_sample, y_pred_sample)
-cm_df = pd.DataFrame(cm, index=['0', '1'], columns=['0', '1'])
-print(cm_df.to_html(classes="table table-bordered table-striped", border=0))
+# ---- Plot Comparativo
+plt.figure(figsize=(8, 6))
+plt.plot(fpr_knn, tpr_knn, label=f'KNN (AUC = {roc_auc_knn:.2f})', lw=2)
+plt.plot(fpr_tree, tpr_tree, label=f'Árvore de Decisão (AUC = {roc_auc_tree:.2f})', lw=2, color='green')
+plt.plot([0, 1], [0, 1], color='gray', linestyle='--')
 
-# ---- PCA para visualização
-X_sample_transformed = pipeline.named_steps['preprocessor'].transform(X_sample)
-pca = PCA(n_components=2)
-X_sample_pca = pca.fit_transform(X_sample_transformed)
-
-# Centróides no espaço PCA
-kmeans_step = pipeline.named_steps['classifier']
-centroids = kmeans_step.cluster_centers_
-centroids_pca = pca.transform(centroids)
-
-# Plot rápido
-plt.figure(figsize=(10, 8))
-plt.scatter(X_sample_pca[:, 0], X_sample_pca[:, 1], c=y_pred_sample, cmap='viridis', s=8)
-plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], 
-           c='red', marker='*', s=200, label='Centroids')
-plt.title('K-Means Clustering (PCA 2D) - Amostragem')
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
+plt.xlabel('Taxa de Falsos Positivos (FPR)')
+plt.ylabel('Taxa de Verdadeiros Positivos (TPR)')
+plt.title('Curva ROC - Comparação KNN vs Árvore de Decisão')
+plt.legend(loc="lower right")
+plt.grid(True)
 
 # Para imprimir na página HTML
 buffer = StringIO()

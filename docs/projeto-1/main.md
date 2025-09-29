@@ -130,5 +130,28 @@ O conjunto de dados foi dividido em 70% para treino e 30% para validação, gara
     --8<-- "docs/projeto-1/kmeans.py"
     ```
 
+## Avaliação
 
+=== "Result"
 
+    ```python exec="1" html="1"
+    --8<-- "docs/projeto-1/roc.py"
+
+    --8<-- "docs/projeto-1/tabela.py"
+    ```
+=== "Prep Code ROC"
+
+    ```python
+    --8<-- "docs/projeto-1/roc.py"
+    ```
+=== "Prep Code Tabela"
+
+    ```python
+    --8<-- "docs/projeto-1/tabela.py"
+    ```
+
+Os três modelos apresentam desempenhos distintos, refletindo suas naturezas e limitações. O KNN obteve acurácia de 58,1%, com precisão de 65,8% e recall de 69,8%, resultando em um F1-score de 67,7%. Isso indica que, apesar de uma acurácia relativamente baixa, o modelo conseguiu equilibrar bem precisão e recall, mostrando-se razoável na detecção dos positivos. Já a Árvore de Decisão apresentou desempenho superior, com acurácia de 63,2% e F1-score de 74,0%, destacando-se principalmente pelo recall de 83,4%, ou seja, foi o modelo que mais conseguiu identificar corretamente os casos positivos, ainda que com precisão um pouco menor que a do KNN. Em termos de discriminação global, os valores de AUC foram baixos (0,55 para KNN e 0,57 para Árvore), mostrando que ambos os classificadores têm poder limitado em separar classes.
+
+Por outro lado, o KMeans, como esperado por ser um modelo não supervisionado, apresentou desempenho bem inferior (acurácia de 40,1% e F1-score de apenas 40,7%), evidenciando a dificuldade em alinhar automaticamente os clusters com as classes reais do problema. Sua precisão de 54,1% mostra que, quando acerta, tem alguma consistência, mas o recall baixo (32,7%) reforça que muitos casos positivos foram ignorados.
+
+Em resumo, a Árvore de Decisão foi o modelo mais eficiente dentro do contexto supervisionado, com melhor equilíbrio entre métricas e maior recall, o que é desejável em cenários onde a detecção de casos positivos é crítica. O KNN, apesar de competitivo, foi menos robusto, e o KMeans demonstrou a limitação natural de modelos de clustering quando comparados diretamente a classificadores supervisionados.
